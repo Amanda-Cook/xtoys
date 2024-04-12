@@ -1,0 +1,400 @@
+{
+  "initialActions": [
+    {
+      "job": "SoundLevelSample",
+      "type": "updateJob",
+      "action": "start",
+      "restart": false
+    },
+    {
+      "type": "updateComponent",
+      "action": "setVolume",
+      "channel": "part-vibrator-a",
+      "rampTime": 0,
+      "percentVolume": "0"
+    },
+    {
+      "type": "updateVariable",
+      "value": "0",
+      "variable": "sessionMaxVolume"
+    },
+    {
+      "type": "updateVariable",
+      "value": "100",
+      "variable": "sessionMinVolume"
+    }
+  ],
+  "finalActions": [
+    {
+      "type": "updateComponent",
+      "action": "setVolume",
+      "channel": "part-vibrator-a",
+      "rampTime": 0,
+      "percentVolume": "0"
+    }
+  ],
+  "globalTriggers": [
+    {
+      "type": "componentState",
+      "word": "{MantraText}",
+      "actions": [
+        {
+          "job": "Main",
+          "type": "updateJob",
+          "action": "start",
+          "restart": true
+        }
+      ],
+      "channel": "speech-recognition-a",
+      "isFinal": null
+    }
+  ],
+  "jobs": {
+    "Main": {
+      "steps": {
+        "Stop": {
+          "actions": [
+            {
+              "type": "updateComponent",
+              "action": "setVolume",
+              "channel": "part-vibrator-a",
+              "rampTime": 0,
+              "percentVolume": "0"
+            }
+          ]
+        },
+        "START": {
+          "actions": [
+            {
+              "code": "var soundSample = [t1,t2,t3,t4,t5];\nsoundSample.sort()\nsoundSample.reverse()\nsetVariable('soundSampleSelect',soundSample[0]);",
+              "type": "customCode",
+              "value": "2",
+              "variable": "a",
+              "resultVar": "result",
+              "variables": [
+                {
+                  "name": "t1",
+                  "value": "t1",
+                  "expression": null
+                },
+                {
+                  "name": "t2",
+                  "value": "t2",
+                  "expression": null
+                },
+                {
+                  "name": "t3",
+                  "value": "t3",
+                  "expression": null
+                },
+                {
+                  "name": "t4",
+                  "value": "t4",
+                  "expression": null
+                },
+                {
+                  "name": "t5",
+                  "value": "t5",
+                  "expression": null
+                }
+              ],
+              "storeResult": false
+            },
+            {
+              "text": "{RewardText}",
+              "type": "updateComponent",
+              "action": "setText",
+              "channel": "speech-synthesis-a"
+            },
+            {
+              "type": "updateVariable",
+              "value": "max({soundSampleSelect} , {sessionMaxVolume})",
+              "variable": "sessionMaxVolume"
+            },
+            {
+              "type": "updateVariable",
+              "value": "min({soundSampleSelect},{sessionMinVolume})",
+              "variable": "sessionMinVolume"
+            },
+            {
+              "type": "updateVariable",
+              "value": "{soundSampleSelect}-{sessionMinVolume}",
+              "variable": "a"
+            },
+            {
+              "type": "updateVariable",
+              "value": "{sessionMaxVolume}-{sessionMinVolume}",
+              "variable": "b"
+            },
+            {
+              "type": "updateVariable",
+              "value": ".5",
+              "variable": "intensityPercentage",
+              "requiredExpression": "{sessionMinVolume}=={sessionMaxVolume}"
+            },
+            {
+              "type": "updateVariable",
+              "value": "{a}/{b}",
+              "variable": "intensityPercentage",
+              "requiredExpression": "{sessionMaxVolume} != {sessionMinVolume}"
+            }
+          ],
+          "triggers": [
+            {
+              "type": "timer",
+              "amount": ".1",
+              "actions": [
+                {
+                  "job": "Main",
+                  "step": "Pleasure",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ]
+            }
+          ]
+        },
+        "Pleasure": {
+          "actions": [
+            {
+              "type": "updateComponent",
+              "action": "setVolume",
+              "channel": "part-vibrator-a",
+              "rampTime": 0,
+              "percentVolume": "max({intensityPercentage}*{ToyMaxIntensity}, {ToyMinIntensity})"
+            }
+          ],
+          "triggers": [
+            {
+              "type": "timer",
+              "amount": "max({ToyMaxDuration}*{intensityPercentage}, {ToyMinDuration})",
+              "actions": [
+                {
+                  "job": "Main",
+                  "step": "Stop",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "SoundLevelSample": {
+      "steps": {
+        "t2": {
+          "triggers": [
+            {
+              "type": "componentState",
+              "event": "any",
+              "actions": [
+                {
+                  "type": "updateVariable",
+                  "value": "{trigger}",
+                  "variable": "t2"
+                }
+              ],
+              "channel": "sound-level-a"
+            },
+            {
+              "type": "timer",
+              "amount": ".2",
+              "actions": [
+                {
+                  "job": "SoundLevelSample",
+                  "step": "t3",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ]
+            }
+          ]
+        },
+        "t3": {
+          "triggers": [
+            {
+              "type": "componentState",
+              "event": "any",
+              "actions": [
+                {
+                  "type": "updateVariable",
+                  "value": "{trigger}",
+                  "variable": "t3"
+                }
+              ],
+              "channel": "sound-level-a"
+            },
+            {
+              "type": "timer",
+              "amount": ".2",
+              "actions": [
+                {
+                  "job": "SoundLevelSample",
+                  "step": "t4",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ]
+            }
+          ]
+        },
+        "t4": {
+          "triggers": [
+            {
+              "type": "componentState",
+              "event": "any",
+              "actions": [
+                {
+                  "type": "updateVariable",
+                  "value": "{trigger}",
+                  "variable": "t4"
+                }
+              ],
+              "channel": "sound-level-a"
+            },
+            {
+              "type": "timer",
+              "amount": ".2",
+              "actions": [
+                {
+                  "job": "SoundLevelSample",
+                  "step": "t5",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ]
+            }
+          ]
+        },
+        "t5": {
+          "triggers": [
+            {
+              "type": "componentState",
+              "event": "any",
+              "actions": [
+                {
+                  "type": "updateVariable",
+                  "value": "{trigger}",
+                  "variable": "t5"
+                }
+              ],
+              "channel": "sound-level-a"
+            },
+            {
+              "type": "timer",
+              "amount": ".2",
+              "actions": [
+                {
+                  "job": "SoundLevelSample",
+                  "step": "START",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ]
+            }
+          ]
+        },
+        "START": {
+          "actions": [],
+          "triggers": [
+            {
+              "type": "componentState",
+              "event": "any",
+              "actions": [
+                {
+                  "type": "updateVariable",
+                  "value": "{trigger}",
+                  "variable": "t1"
+                }
+              ],
+              "channel": "sound-level-a"
+            },
+            {
+              "type": "timer",
+              "amount": ".2",
+              "actions": [
+                {
+                  "job": "SoundLevelSample",
+                  "step": "t2",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "queues": [],
+  "channels": {
+    "sound-level-a": {
+      "name": null,
+      "type": "sound-level"
+    },
+    "part-vibrator-a": {
+      "name": "Pleasure",
+      "type": "part-vibrator"
+    },
+    "speech-synthesis-a": {
+      "name": null,
+      "type": "speech-synthesis"
+    },
+    "speech-recognition-a": {
+      "name": null,
+      "type": "speech-recognition"
+    }
+  },
+  "controls": [
+    {
+      "id": "MantraText",
+      "name": "Mantra Text",
+      "type": "input",
+      "value": "I will read this mantra loudly",
+      "description": "Recite this phrase and be rewarded"
+    },
+    {
+      "id": "RewardText",
+      "name": "RewardText",
+      "type": "input",
+      "value": "Good",
+      "description": "This will be spoken to you after reciting the mantra"
+    },
+    {
+      "id": "ToyMaxIntensity",
+      "name": "Toy Maximum Intensity %",
+      "type": "input",
+      "value": "100",
+      "description": "Enter a percentage between 0-100"
+    },
+    {
+      "id": "ToyMinIntensity",
+      "name": "Toy Minimum Intensity %",
+      "type": "input",
+      "value": "10",
+      "description": "Enter a percentage between 0-100"
+    },
+    {
+      "id": "ToyMaxDuration",
+      "name": "Toy Max Duration (Seconds)",
+      "type": "input",
+      "value": "10",
+      "description": "Toy Max Duration (Seconds)"
+    },
+    {
+      "id": "ToyMinDuration",
+      "name": "Toy Minimum Duration (Seconds)",
+      "type": "input",
+      "value": "2",
+      "description": "Toy Minimum Duration (Seconds)"
+    }
+  ],
+  "controlPresets": [],
+  "media": {
+    "patterns": {},
+    "audio": {},
+    "voices": {}
+  },
+  "customFunctions": ""
+}
