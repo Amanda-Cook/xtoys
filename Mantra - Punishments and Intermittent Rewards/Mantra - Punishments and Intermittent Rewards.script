@@ -11,18 +11,6 @@
       "variable": "RewardFrequencyPercent"
     },
     {
-      "job": "Main",
-      "type": "updateJob",
-      "action": "start",
-      "restart": true
-    },
-    {
-      "job": "SoundLevelCapture",
-      "type": "updateJob",
-      "action": "start",
-      "restart": false
-    },
-    {
       "type": "updateVariable",
       "value": "0",
       "variable": "sessionMaxVolume"
@@ -36,6 +24,18 @@
       "type": "updateVariable",
       "value": "0",
       "variable": "scaleFactor"
+    },
+    {
+      "job": "Main",
+      "type": "updateJob",
+      "action": "start",
+      "restart": true
+    },
+    {
+      "job": "SoundLevelCapture",
+      "type": "updateJob",
+      "action": "start",
+      "restart": false
     }
   ],
   "finalActions": [
@@ -259,7 +259,7 @@
               "type": "updateVariable",
               "value": "max({RewardFrequencyPercent}*{RewardFrequencyDecayRate},{RewardFrequencyFloor})",
               "variable": "RewardFrequencyPercent",
-              "requiredExpression": "{EnableAutomaticRewardFrequencyDecrease} == \"True\" and {GiveReward} and ({EnableVocalReward} == \"Intermittent\" or {EnablePleasureReward} == \"Intermittent\")"
+              "requiredExpression": "{EnableAutomaticRewardFrequencyDecrease} == \"On\" and {GiveReward} and ({EnableVocalReward} == \"Intermittent\" or {EnablePleasureReward} == \"Intermittent\")"
             }
           ],
           "triggers": [
@@ -435,7 +435,7 @@
               "type": "updateVariable",
               "value": "1",
               "variable": "scaleFactor",
-              "requiredExpression": "{EnableSoundLevelControl}==\"False\""
+              "requiredExpression": "{EnableVolumeLevelControl}==\"Off\""
             },
             {
               "type": "updateVariable",
@@ -737,18 +737,29 @@
         "Punish once per failure",
         "None"
       ],
-      "description": "Setting this to True will allow a Vocal Punishment to play when you fail to recite your mantra"
+      "description": "How often do you want to be verbally punished for failing to complete your mantra in time?"
     },
     {
       "id": "EnableAutomaticRewardFrequencyDecrease",
-      "name": "Enable Automatic Reward Frequency Decrease",
+      "name": "Automatic Reward Frequency Decrease",
       "type": "multi-toggle",
-      "value": "True",
+      "value": "On",
       "options": [
-        "True",
-        "False"
+        "On",
+        "Off"
       ],
       "description": "When enabled your reward frequency will become less as the session continues"
+    },
+    {
+      "id": "EnableVolumeLevelControl",
+      "name": "Volume Level Control",
+      "type": "multi-toggle",
+      "value": "On",
+      "options": [
+        "On",
+        "Off"
+      ],
+      "description": "If enabled, rewards and punishments will be dynamically adjusted based on the volume of your voice"
     },
     {
       "id": "RewardFrequencyPercentInit",
@@ -854,107 +865,6 @@
       "type": "input",
       "value": "20",
       "description": "0-100%. Ensures that your reward frequency will never drop below this amount"
-    },
-    {
-      "id": "EnableSoundLevelControl",
-      "name": "Enable Sound Level Control",
-      "type": "multi-toggle",
-      "value": "True",
-      "options": [
-        "True",
-        "False"
-      ],
-      "description": "If enabled, rewards and punishments will be scaled to how loudly you speak the mantra"
-    },
-    {
-      "id": "ScaledPleasureTimerMax",
-      "name": "ScaledPleasureTimerMax",
-      "type": "input",
-      "description": "ScaledPleasureTimerMax"
-    },
-    {
-      "id": "ScaledPleasureIntensityMax",
-      "name": "ScaledPleasureIntensityMax",
-      "type": "input",
-      "description": "ScaledPleasureIntensityMax"
-    },
-    {
-      "id": "sessionMinVolume",
-      "name": "sessionMinVolume",
-      "type": "input",
-      "description": "sessionMinVolume"
-    },
-    {
-      "id": "sessionMaxVolume",
-      "name": "sessionMaxVolume",
-      "type": "input",
-      "description": "sessionMaxVolume"
-    },
-    {
-      "id": "soundSampleSelect",
-      "name": "soundSampleSelect",
-      "type": "input",
-      "description": "soundSampleSelect"
-    },
-    {
-      "id": "DebugStep",
-      "name": "DebugStep",
-      "type": "input",
-      "description": "DebugStep"
-    },
-    {
-      "id": "ScaledMantraTimeMax",
-      "name": "ScaledMantraTimeMax",
-      "type": "input",
-      "description": "ScaledMantraTimeMax"
-    },
-    {
-      "id": "ScaledShockIntensityMin",
-      "name": "ScaledShockIntensityMin",
-      "type": "input",
-      "description": "ScaledShockIntensityMin"
-    },
-    {
-      "id": "ScaledShockTimeMin",
-      "name": "ScaledShockTimeMin",
-      "type": "input",
-      "description": "ScaledShockTimeMin"
-    },
-    {
-      "id": "ScaledShockPauseTimeMax",
-      "name": "ScaledShockPauseTimeMax",
-      "type": "input",
-      "description": "ScaledShockPauseTimeMax"
-    },
-    {
-      "id": "MantraTimer",
-      "name": "MantraTimer",
-      "type": "input",
-      "description": "MantraTimer"
-    },
-    {
-      "id": "ScaledPleasureTimerMax",
-      "name": "ScaledPleasureTimerMax",
-      "type": "input",
-      "description": "ScaledPleasureTimerMax"
-    },
-    {
-      "id": "ScaledPleasureIntensityMax",
-      "name": "ScaledPleasureIntensityMax",
-      "type": "input",
-      "description": "ScaledPleasureIntensityMax"
-    },
-    {
-      "id": "PleasureTimer",
-      "name": "PleasureTimer",
-      "type": "input",
-      "description": "PleasureTimer"
-    },
-    {
-      "id": "scaleFactor",
-      "name": "scaleFactor",
-      "type": "input",
-      "description": "scaleFactor"
     }
   ],
   "controlPresets": [],
