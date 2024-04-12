@@ -1,0 +1,3 @@
+You will be rewarded based on how loudly you recite your mantra.
+
+Script is self-calibrating, automatically adjusting based on how loudly/softly you speak

@@ -1,0 +1,13 @@
+Speak your mantra and maybe get a reward. Failure results in vocal admonishment and repeated shocks.
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+This script is highly customizable:
+·Define your mantra and amount of time you are allowed before you will be punished
+·Configurable duration and intensity of pleasure and pain rewards and punishment
+·All times and intensities will be randomly chosen from a range you set, optionally influenced by your speaking volume
+·Enable/Disable vocal rewards and punishments
+·Set the frequency rewards are given and optionally allow the reward frequency to decrease over time
+
+
+--------------------------------------------------------------------------------------------------------------------------------

@@ -1,0 +1,7 @@
+Type Dumb is a language learning tool with a simple reward and punishment system designed to help dumb down your vocabulary skills.
+
+Earn rewards for typing specific phrases correctly, randomly selected during the session. Avoid penalties by refraining from typing long words, attempting edits, or using disallowed letters. 
+
+-----------------------------------------
+
+Use the 'Anywhere' connection method for the Keyboard tool to have the script react while typing in other pages or apps. And edit the Keyboard tool settings to allow key passthru.

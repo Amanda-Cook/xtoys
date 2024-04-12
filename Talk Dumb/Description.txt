@@ -1,0 +1,7 @@
+Talk Dumb is a language learning tool designed to help dumb down your vocabulary skills. 
+v0.2 Added a progressive pleasure component. Babble to make your toy buzz. 
+
+Avoid penalties by refraining from using complex words and large numbers.
+
+---------------------------------
+NOTE: You are at the mercy of the Speech Recognition block and a very simplified complexity evaluation scheme. Expect to be shocked even if you don't think you deserve it.
