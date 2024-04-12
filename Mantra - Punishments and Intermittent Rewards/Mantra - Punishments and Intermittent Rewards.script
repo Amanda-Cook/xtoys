@@ -1,0 +1,967 @@
+{
+  "initialActions": [
+    {
+      "type": "updateVariable",
+      "value": "0",
+      "variable": "PleasureTimer"
+    },
+    {
+      "type": "updateVariable",
+      "value": "{RewardFrequencyPercentInit}",
+      "variable": "RewardFrequencyPercent"
+    },
+    {
+      "job": "Main",
+      "type": "updateJob",
+      "action": "start",
+      "restart": true
+    },
+    {
+      "job": "SoundLevelCapture",
+      "type": "updateJob",
+      "action": "start",
+      "restart": false
+    },
+    {
+      "type": "updateVariable",
+      "value": "0",
+      "variable": "sessionMaxVolume"
+    },
+    {
+      "type": "updateVariable",
+      "value": "100",
+      "variable": "sessionMinVolume"
+    },
+    {
+      "type": "updateVariable",
+      "value": "0",
+      "variable": "scaleFactor"
+    }
+  ],
+  "finalActions": [
+    {
+      "type": "updateComponent",
+      "action": "setVolume",
+      "channel": "generic-1-a",
+      "rampTime": 0,
+      "percentVolume": "0"
+    },
+    {
+      "time": "0",
+      "type": "updateComponent",
+      "shock": false,
+      "action": "setShock2",
+      "channel": "shockcollar-a",
+      "percentVolume": "0"
+    }
+  ],
+  "globalTriggers": [],
+  "jobs": {
+    "Main": {
+      "steps": {
+        "START": {
+          "actions": [
+            {
+              "type": "updateVariable",
+              "value": "START",
+              "variable": "DebugStep"
+            },
+            {
+              "type": "updateVariable",
+              "value": "False",
+              "variable": "PunishmentWasSpoken"
+            },
+            {
+              "time": "0",
+              "type": "updateComponent",
+              "shock": false,
+              "action": "setShock2",
+              "channel": "shockcollar-a",
+              "percentVolume": "0"
+            },
+            {
+              "type": "updateComponent",
+              "action": "setVolume",
+              "channel": "generic-1-a",
+              "rampTime": 0,
+              "percentVolume": "0"
+            },
+            {
+              "type": "updateVariable",
+              "value": "{MantraTimeMax}-{MantraTimeMin}",
+              "variable": "MantraTimeRange"
+            },
+            {
+              "type": "updateVariable",
+              "value": "{ShockIntensityMax}-{ShockIntensityMin}",
+              "variable": "ShockIntensityRange"
+            },
+            {
+              "type": "updateVariable",
+              "value": "{ShockTimeMax}-{ShockTimeMin}",
+              "variable": "ShockTimeRange"
+            },
+            {
+              "type": "updateVariable",
+              "value": "{ShockPauseTimeMax}-{ShockPauseTimeMin}",
+              "variable": "ShockPauseTimeRange"
+            },
+            {
+              "type": "updateVariable",
+              "value": "{PleasureIntensityMax}-{PleasureIntensityMin}",
+              "variable": "PleasureIntensityRange"
+            },
+            {
+              "type": "updateVariable",
+              "value": "{PleasureTimeMax}-{PleasureTimeMin}",
+              "variable": "PleasureTimeRange"
+            },
+            {
+              "type": "updateVariable",
+              "value": "{MantraTimeMax}-{MantraTimeRange}*{scaleFactor}",
+              "variable": "ScaledMantraTimeMax"
+            },
+            {
+              "type": "updateVariable",
+              "value": "{ShockIntensityMin}+{ShockIntensityRange}*{scaleFactor}",
+              "variable": "ScaledShockIntensityMin"
+            },
+            {
+              "type": "updateVariable",
+              "value": "{ShockTimeMin}+{ShockTimeRange}*{scaleFactor}",
+              "variable": "ScaledShockTimeMin"
+            },
+            {
+              "type": "updateVariable",
+              "value": "{ShockPauseTimeMax}-{ShockPauseTimeRange}*{scaleFactor}",
+              "variable": "ScaledShockPauseTimeMax"
+            },
+            {
+              "type": "updateVariable",
+              "value": "({MantraTimeMin}-{ScaledMantraTimeMax})",
+              "variable": "MantraTimer"
+            },
+            {
+              "type": "updateVariable",
+              "value": "{MantraTimer}-{PleasureTimer}",
+              "variable": "MantraTimer"
+            },
+            {
+              "type": "updateVariable",
+              "value": "max({MantraTimer},.1)",
+              "variable": "MantraTimer"
+            }
+          ],
+          "triggers": [
+            {
+              "type": "timer",
+              "amount": ".1",
+              "actions": [
+                {
+                  "job": "Main",
+                  "step": "1_WaitForMantra",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ]
+            },
+            {
+              "type": "componentState",
+              "word": "{Mantra}",
+              "actions": [
+                {
+                  "job": "Main",
+                  "step": "4_PleasureInit",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ],
+              "channel": "speech-recognition-a",
+              "isFinal": true
+            }
+          ]
+        },
+        "2_Punish": {
+          "actions": [
+            {
+              "type": "updateVariable",
+              "value": "2_Punish",
+              "variable": "DebugStep"
+            },
+            {
+              "text": "{MantraVocalPunishment}",
+              "type": "updateComponent",
+              "action": "setText",
+              "channel": "speech-synthesis-a",
+              "requiredExpression": "{EnableVocalPunishment} == \"Punish with every shock\" or ({EnableVocalPunishment}==\"Punish once per failure\" and {PunishmentWasSpoken} != \"True\")"
+            },
+            {
+              "time": "({ShockTimeMax})",
+              "type": "updateComponent",
+              "shock": true,
+              "action": "setShock2",
+              "channel": "shockcollar-a",
+              "percentVolume": "({ScaledShockIntensityMin}-{ShockIntensityMax})"
+            }
+          ],
+          "triggers": [
+            {
+              "type": "timer",
+              "amount": "({ScaledShockTimeMin}-{ShockTimeMax})",
+              "actions": [
+                {
+                  "job": "Main",
+                  "step": "3_PausePunish",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ]
+            },
+            {
+              "type": "componentState",
+              "word": "{Mantra}",
+              "actions": [
+                {
+                  "job": "Main",
+                  "step": "4_PleasureInit",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ],
+              "channel": "speech-recognition-a",
+              "isFinal": true
+            }
+          ]
+        },
+        "5_Pleasure": {
+          "actions": [
+            {
+              "type": "updateVariable",
+              "value": "5_Pleasure",
+              "variable": "DebugStep"
+            },
+            {
+              "text": "{MantraVocalReward}",
+              "type": "updateComponent",
+              "action": "setText",
+              "channel": "speech-synthesis-a",
+              "requiredExpression": "{EnableVocalReward} == \"Always\" or ({GiveReward} == \"true\" and {EnableVocalReward} == \"Intermittent\")"
+            },
+            {
+              "type": "updateComponent",
+              "action": "setVolume",
+              "channel": "generic-1-a",
+              "rampTime": 0,
+              "percentVolume": "({PleasureIntensityMin}-{ScaledPleasureIntensityMax})",
+              "requiredExpression": "{EnablePleasureReward} == \"Always\" or ({GiveReward} == \"true\" and {EnablePleasureReward} == \"Intermittent\")"
+            },
+            {
+              "type": "updateVariable",
+              "value": "max({RewardFrequencyPercent}*{RewardFrequencyDecayRate},{RewardFrequencyFloor})",
+              "variable": "RewardFrequencyPercent",
+              "requiredExpression": "{EnableAutomaticRewardFrequencyDecrease} == \"True\" and {GiveReward} and ({EnableVocalReward} == \"Intermittent\" or {EnablePleasureReward} == \"Intermittent\")"
+            }
+          ],
+          "triggers": [
+            {
+              "type": "timer",
+              "amount": "{PleasureTimer}",
+              "actions": [
+                {
+                  "job": "Main",
+                  "step": "START",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ]
+            },
+            {
+              "type": "componentState",
+              "word": "{Mantra}",
+              "actions": [
+                {
+                  "job": "Main",
+                  "step": "4_PleasureInit",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ],
+              "channel": "speech-recognition-a",
+              "isFinal": true
+            }
+          ]
+        },
+        "3_PausePunish": {
+          "actions": [
+            {
+              "type": "updateVariable",
+              "value": "3_PausePunish",
+              "variable": "DebugStep"
+            },
+            {
+              "type": "updateVariable",
+              "value": "True",
+              "variable": "PunishmentWasSpoken"
+            },
+            {
+              "time": "0",
+              "type": "updateComponent",
+              "shock": false,
+              "action": "setShock2",
+              "channel": "shockcollar-a",
+              "percentVolume": "0"
+            }
+          ],
+          "triggers": [
+            {
+              "type": "timer",
+              "amount": "({ShockPauseTimeMin}-{ScaledShockPauseTimeMax})",
+              "actions": [
+                {
+                  "job": "Main",
+                  "step": "2_Punish",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ]
+            },
+            {
+              "type": "componentState",
+              "word": "{Mantra}",
+              "actions": [
+                {
+                  "job": "Main",
+                  "step": "4_PleasureInit",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ],
+              "channel": "speech-recognition-a",
+              "isFinal": true
+            }
+          ]
+        },
+        "4_PleasureInit": {
+          "actions": [
+            {
+              "type": "updateVariable",
+              "value": "4_PleasureInit",
+              "variable": "DebugStep"
+            },
+            {
+              "time": "0",
+              "type": "updateComponent",
+              "shock": false,
+              "action": "setShock2",
+              "channel": "shockcollar-a",
+              "percentVolume": "0"
+            },
+            {
+              "type": "updateVariable",
+              "value": "({PleasureTimeMin}-{PleasureTimeMax})",
+              "variable": "PleasureTimer"
+            },
+            {
+              "type": "updateVariable",
+              "value": "(1-100)<={RewardFrequencyPercent}",
+              "variable": "GiveReward"
+            },
+            {
+              "code": "var soundSample = [t1,t2,t3,t4,t5];\nsoundSample.sort()\nsoundSample.reverse()\nsetVariable('soundSampleSelect',soundSample[0]);",
+              "type": "customCode",
+              "resultVar": "result",
+              "variables": [
+                {
+                  "name": "t1",
+                  "value": "t1",
+                  "expression": null
+                },
+                {
+                  "name": "t2",
+                  "value": "t2",
+                  "expression": null
+                },
+                {
+                  "name": "t3",
+                  "value": "t3",
+                  "expression": null
+                },
+                {
+                  "name": "t4",
+                  "value": "t4",
+                  "expression": null
+                },
+                {
+                  "name": "t5",
+                  "value": "t5",
+                  "expression": null
+                }
+              ],
+              "storeResult": false
+            },
+            {
+              "type": "updateVariable",
+              "value": "max({soundSampleSelect} , {sessionMaxVolume})",
+              "variable": "sessionMaxVolume"
+            },
+            {
+              "type": "updateVariable",
+              "value": "min({soundSampleSelect},{sessionMinVolume})",
+              "variable": "sessionMinVolume"
+            },
+            {
+              "type": "updateVariable",
+              "value": "{soundSampleSelect}-{sessionMinVolume}",
+              "variable": "a"
+            },
+            {
+              "type": "updateVariable",
+              "value": "{sessionMaxVolume}-{sessionMinVolume}",
+              "variable": "b"
+            },
+            {
+              "type": "updateVariable",
+              "value": "1",
+              "variable": "scaleFactor",
+              "requiredExpression": "{sessionMinVolume}=={sessionMaxVolume}"
+            },
+            {
+              "type": "updateVariable",
+              "value": "{a}/{b}",
+              "variable": "scaleFactor",
+              "requiredExpression": "{sessionMaxVolume} != {sessionMinVolume}"
+            },
+            {
+              "type": "updateVariable",
+              "value": "1",
+              "variable": "scaleFactor",
+              "requiredExpression": "{EnableSoundLevelControl}==\"False\""
+            },
+            {
+              "type": "updateVariable",
+              "value": "1-{scaleFactor}",
+              "variable": "scaleFactor"
+            },
+            {
+              "type": "updateVariable",
+              "value": "{PleasureTimeMax}-{PleasureTimeRange}*{scaleFactor}",
+              "variable": "ScaledPleasureTimerMax"
+            },
+            {
+              "type": "updateVariable",
+              "value": "{PleasureIntensityMax}-{PleasureIntensityRange}*{scaleFactor}",
+              "variable": "ScaledPleasureIntensityMax"
+            },
+            {
+              "type": "updateVariable",
+              "value": "({PleasureTimeMin}-{ScaledPleasureTimerMax})",
+              "variable": "PleasureTimer"
+            }
+          ],
+          "triggers": [
+            {
+              "type": "timer",
+              "amount": ".1",
+              "actions": [
+                {
+                  "job": "Main",
+                  "step": "5_Pleasure",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ]
+            }
+          ]
+        },
+        "1_WaitForMantra": {
+          "actions": [
+            {
+              "type": "updateVariable",
+              "value": "1_WaitForMantra",
+              "variable": "DebugStep"
+            }
+          ],
+          "triggers": [
+            {
+              "type": "timer",
+              "amount": "{MantraTimer}",
+              "actions": [
+                {
+                  "job": "Main",
+                  "step": "2_Punish",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ]
+            },
+            {
+              "type": "componentState",
+              "word": "{Mantra}",
+              "actions": [
+                {
+                  "job": "Main",
+                  "step": "4_PleasureInit",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ],
+              "channel": "speech-recognition-a",
+              "isFinal": true
+            }
+          ]
+        }
+      }
+    },
+    "SoundLevelCapture": {
+      "steps": {
+        "t2": {
+          "triggers": [
+            {
+              "type": "componentState",
+              "event": "any",
+              "actions": [
+                {
+                  "type": "updateVariable",
+                  "value": "{trigger}",
+                  "variable": "t2"
+                }
+              ],
+              "channel": "sound-level-a"
+            },
+            {
+              "type": "timer",
+              "amount": ".2",
+              "actions": [
+                {
+                  "job": "SoundLevelCapture",
+                  "step": "t3",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ]
+            }
+          ]
+        },
+        "t3": {
+          "triggers": [
+            {
+              "type": "componentState",
+              "event": "any",
+              "actions": [
+                {
+                  "type": "updateVariable",
+                  "value": "{trigger}",
+                  "variable": "t3"
+                }
+              ],
+              "channel": "sound-level-a"
+            },
+            {
+              "type": "timer",
+              "amount": ".2",
+              "actions": [
+                {
+                  "job": "SoundLevelCapture",
+                  "step": "t4",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ]
+            }
+          ]
+        },
+        "t4": {
+          "triggers": [
+            {
+              "type": "componentState",
+              "event": "any",
+              "actions": [
+                {
+                  "type": "updateVariable",
+                  "value": "{trigger}",
+                  "variable": "t4"
+                }
+              ],
+              "channel": "sound-level-a"
+            },
+            {
+              "type": "timer",
+              "amount": ".2",
+              "actions": [
+                {
+                  "job": "SoundLevelCapture",
+                  "step": "t5",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ]
+            }
+          ]
+        },
+        "t5": {
+          "triggers": [
+            {
+              "type": "componentState",
+              "event": "any",
+              "actions": [
+                {
+                  "type": "updateVariable",
+                  "value": "{trigger}",
+                  "variable": "t5"
+                }
+              ],
+              "channel": "sound-level-a"
+            },
+            {
+              "type": "timer",
+              "amount": ".2",
+              "actions": [
+                {
+                  "job": "SoundLevelCapture",
+                  "step": "START",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ]
+            }
+          ]
+        },
+        "START": {
+          "actions": [],
+          "triggers": [
+            {
+              "type": "componentState",
+              "event": "any",
+              "actions": [
+                {
+                  "type": "updateVariable",
+                  "value": "{trigger}",
+                  "variable": "t1"
+                }
+              ],
+              "channel": "sound-level-a"
+            },
+            {
+              "type": "timer",
+              "amount": ".2",
+              "actions": [
+                {
+                  "job": "SoundLevelCapture",
+                  "step": "t2",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "queues": [],
+  "channels": {
+    "generic-1-a": {
+      "name": "Pleasure",
+      "type": "generic-1"
+    },
+    "shockcollar-a": {
+      "name": "Pain",
+      "type": "shockcollar"
+    },
+    "sound-level-a": {
+      "name": null,
+      "type": "sound-level"
+    },
+    "speech-synthesis-a": {
+      "name": null,
+      "type": "speech-synthesis"
+    },
+    "speech-recognition-a": {
+      "name": null,
+      "type": "speech-recognition"
+    }
+  },
+  "controls": [
+    {
+      "id": "Mantra",
+      "name": "Mantra Text",
+      "type": "input",
+      "value": "I will recite this mantra aloud",
+      "description": "The mantra you wish to recite"
+    },
+    {
+      "id": "MantraVocalReward",
+      "name": "Mantra Vocal Reward",
+      "type": "input",
+      "value": "Good",
+      "description": "This will be spoken to you if you say your mantra"
+    },
+    {
+      "id": "MantraVocalPunishment",
+      "name": "Mantra Vocal Punishment",
+      "type": "input",
+      "value": "Bad",
+      "description": "This will be read to you if you fail to recite your mantra in time"
+    },
+    {
+      "id": "EnablePleasureReward",
+      "name": "Enable Pleasure Reward",
+      "type": "multi-toggle",
+      "value": "Intermittent",
+      "options": [
+        "Always",
+        "Intermittent",
+        "Never"
+      ],
+      "description": "How often do you want to be physically rewarded for completing your mantra?"
+    },
+    {
+      "id": "EnableVocalReward",
+      "name": "Enable Vocal Rewards",
+      "type": "multi-toggle",
+      "value": "Always",
+      "options": [
+        "Always",
+        "Intermittent",
+        "Never"
+      ],
+      "description": "How often do you want to be verbally rewarded for completing your mantra?"
+    },
+    {
+      "id": "EnableVocalPunishment",
+      "name": "Enable Vocal Punishment",
+      "type": "multi-toggle",
+      "value": "Punish once per failure",
+      "options": [
+        "Punish with every shock",
+        "Punish once per failure",
+        "None"
+      ],
+      "description": "Setting this to True will allow a Vocal Punishment to play when you fail to recite your mantra"
+    },
+    {
+      "id": "EnableAutomaticRewardFrequencyDecrease",
+      "name": "Enable Automatic Reward Frequency Decrease",
+      "type": "multi-toggle",
+      "value": "True",
+      "options": [
+        "True",
+        "False"
+      ],
+      "description": "When enabled your reward frequency will become less as the session continues"
+    },
+    {
+      "id": "RewardFrequencyPercentInit",
+      "name": "Initial Reward Frequency Percent",
+      "type": "input",
+      "value": "100",
+      "description": "If intermittent rewards are enabled, this is how often you will receive one when you first start the script"
+    },
+    {
+      "id": "MantraTimeMin",
+      "name": "Mantra Time Minimum (Seconds)",
+      "type": "input",
+      "value": "15",
+      "description": "Amount of time you have to recite your mantra "
+    },
+    {
+      "id": "MantraTimeMax",
+      "name": "Mantra Time Maximum (Seconds)",
+      "type": "input",
+      "value": "45",
+      "description": "Amount of time you have to recite your mantra "
+    },
+    {
+      "id": "ShockIntensityMin",
+      "name": "Shock Intensity Minimum Percent",
+      "type": "input",
+      "value": "60",
+      "description": "Enter a value between 0-100"
+    },
+    {
+      "id": "ShockIntensityMax",
+      "name": "Shock Intensity Maximum Percent",
+      "type": "input",
+      "value": "100",
+      "description": "Enter a value between 0-100"
+    },
+    {
+      "id": "ShockTimeMin",
+      "name": "Shock Time Minimum (Seconds)",
+      "type": "input",
+      "value": "5",
+      "description": "If you fail to recite your mantra in time, you will be given shocks of at least this length"
+    },
+    {
+      "id": "ShockTimeMax",
+      "name": "Shock Time Maximum (Seconds)",
+      "type": "input",
+      "value": "10",
+      "description": "If you fail to recite your mantra in time, you will be given shocks up to this length"
+    },
+    {
+      "id": "ShockPauseTimeMin",
+      "name": "Shock Pause Time Minimum (Seconds)",
+      "type": "input",
+      "value": "1",
+      "description": "Minimum wait between shocks"
+    },
+    {
+      "id": "ShockPauseTimeMax",
+      "name": "Shock Pause Time Maximum (Seconds)",
+      "type": "input",
+      "value": "3",
+      "description": "Maximum wait between shocks"
+    },
+    {
+      "id": "PleasureIntensityMin",
+      "name": "Pleasure Intensity Minimum Percent",
+      "type": "input",
+      "value": "20",
+      "description": "Enter a number between 0 and 100"
+    },
+    {
+      "id": "PleasureIntensityMax",
+      "name": "Pleasure Intensity Maximum Percent",
+      "type": "input",
+      "value": "100",
+      "description": "Enter a number between 0 and 100"
+    },
+    {
+      "id": "PleasureTimeMin",
+      "name": "Pleasure Time Minimum (Seconds)",
+      "type": "input",
+      "value": "5",
+      "description": "How long you will be rewarded after reciting your mantra"
+    },
+    {
+      "id": "PleasureTimeMax",
+      "name": "Pleasure Time Maximum (Seconds)",
+      "type": "input",
+      "value": "15",
+      "description": "How long you will be rewarded after reciting your mantra"
+    },
+    {
+      "id": "RewardFrequencyDecayRate",
+      "name": "Reward Frequency Decay Rate",
+      "type": "input",
+      "value": ".98",
+      "description": "Enter a number between 0 and 1 (e.g. .95). If you are using intermittent rewards this will decrease how often you are rewarded. A value of 1 will ensure that your reward frequency does not change. Adjust based on personal preference, but I'd suggest setting this to at least .95"
+    },
+    {
+      "id": "RewardFrequencyFloor",
+      "name": "Reward Frequency Floor Percent",
+      "type": "input",
+      "value": "20",
+      "description": "0-100%. Ensures that your reward frequency will never drop below this amount"
+    },
+    {
+      "id": "EnableSoundLevelControl",
+      "name": "Enable Sound Level Control",
+      "type": "multi-toggle",
+      "value": "True",
+      "options": [
+        "True",
+        "False"
+      ],
+      "description": "If enabled, rewards and punishments will be scaled to how loudly you speak the mantra"
+    },
+    {
+      "id": "ScaledPleasureTimerMax",
+      "name": "ScaledPleasureTimerMax",
+      "type": "input",
+      "description": "ScaledPleasureTimerMax"
+    },
+    {
+      "id": "ScaledPleasureIntensityMax",
+      "name": "ScaledPleasureIntensityMax",
+      "type": "input",
+      "description": "ScaledPleasureIntensityMax"
+    },
+    {
+      "id": "sessionMinVolume",
+      "name": "sessionMinVolume",
+      "type": "input",
+      "description": "sessionMinVolume"
+    },
+    {
+      "id": "sessionMaxVolume",
+      "name": "sessionMaxVolume",
+      "type": "input",
+      "description": "sessionMaxVolume"
+    },
+    {
+      "id": "soundSampleSelect",
+      "name": "soundSampleSelect",
+      "type": "input",
+      "description": "soundSampleSelect"
+    },
+    {
+      "id": "DebugStep",
+      "name": "DebugStep",
+      "type": "input",
+      "description": "DebugStep"
+    },
+    {
+      "id": "ScaledMantraTimeMax",
+      "name": "ScaledMantraTimeMax",
+      "type": "input",
+      "description": "ScaledMantraTimeMax"
+    },
+    {
+      "id": "ScaledShockIntensityMin",
+      "name": "ScaledShockIntensityMin",
+      "type": "input",
+      "description": "ScaledShockIntensityMin"
+    },
+    {
+      "id": "ScaledShockTimeMin",
+      "name": "ScaledShockTimeMin",
+      "type": "input",
+      "description": "ScaledShockTimeMin"
+    },
+    {
+      "id": "ScaledShockPauseTimeMax",
+      "name": "ScaledShockPauseTimeMax",
+      "type": "input",
+      "description": "ScaledShockPauseTimeMax"
+    },
+    {
+      "id": "MantraTimer",
+      "name": "MantraTimer",
+      "type": "input",
+      "description": "MantraTimer"
+    },
+    {
+      "id": "ScaledPleasureTimerMax",
+      "name": "ScaledPleasureTimerMax",
+      "type": "input",
+      "description": "ScaledPleasureTimerMax"
+    },
+    {
+      "id": "ScaledPleasureIntensityMax",
+      "name": "ScaledPleasureIntensityMax",
+      "type": "input",
+      "description": "ScaledPleasureIntensityMax"
+    },
+    {
+      "id": "PleasureTimer",
+      "name": "PleasureTimer",
+      "type": "input",
+      "description": "PleasureTimer"
+    },
+    {
+      "id": "scaleFactor",
+      "name": "scaleFactor",
+      "type": "input",
+      "description": "scaleFactor"
+    }
+  ],
+  "controlPresets": [],
+  "media": {
+    "patterns": {},
+    "audio": {},
+    "voices": {}
+  },
+  "customFunctions": ""
+}

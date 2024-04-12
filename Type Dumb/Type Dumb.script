@@ -1,0 +1,298 @@
+{
+  initialActions [
+    {
+      code updateTrackedWords();,
+      type customCode,
+      resultVar result
+    }
+  ],
+  finalActions [
+    {
+      type updateComponent,
+      action setVolume,
+      channel generic-1-a,
+      rampTime 0,
+      percentVolume 0
+    },
+    {
+      type updateComponent,
+      shock false,
+      action setShock2,
+      channel shockcollar-a,
+      percentVolume 0
+    }
+  ],
+  globalTriggers [
+    {
+      part ,
+      type componentState,
+      state down,
+      actions [
+        {
+          code onKeyPressed(key);,
+          type customCode,
+          resultVar result,
+          variables [
+            {
+              name key,
+              value trigger,
+              expression null
+            }
+          ]
+        }
+      ],
+      channel keyboard-a
+    },
+    {
+      type variableChange,
+      actions [
+        {
+          code updateTrackedWords();,
+          type customCode,
+          action setText,
+          resultVar result
+        }
+      ],
+      variable words,
+      valueChange true
+    }
+  ],
+  jobs {
+    Punish {
+      steps {
+        START {
+          actions [
+            {
+              text {VocalPunishmentText},
+              type updateComponent,
+              action setText,
+              channel speech-synthesis-a,
+              requiredExpression {EnableVocalPunishment}==Yes
+            },
+            {
+              time 1,
+              type updateComponent,
+              shock true,
+              action setShock2,
+              channel shockcollar-a,
+              percentVolume ({PunishIntensityMin}-{PunishIntensityMax})
+            }
+          ],
+          triggers []
+        }
+      }
+    },
+    Vibrate {
+      steps {
+        Stop {
+          actions [
+            {
+              type updateComponent,
+              action setVolume,
+              channel generic-1-a,
+              rampTime 0,
+              percentVolume 0
+            },
+            {
+              job Vibrate,
+              type updateJob,
+              action stop
+            }
+          ]
+        },
+        START {
+          actions [
+            {
+              type updateComponent,
+              action setVolume,
+              channel generic-1-a,
+              rampTime 0,
+              percentVolume ({LineSuccessIntensityMin}-{LineSuccessIntensityMax})
+            },
+            {
+              type updateVariable,
+              value .,
+              variable rewardPhrase
+            },
+            {
+              type updateVariable,
+              value {VocalRewardText}.,
+              variable rewardPhrase,
+              requiredExpression {EnableVocalInstruction}==Yes - After Reward Text
+            },
+            {
+              type updateVariable,
+              value {rewardPhrase} {VocalInstructionPrefix},
+              variable rewardPhrase,
+              requiredExpression {EnableVocalInstruction}==Yes - After Reward Text or {EnableVocalInstruction}==Yes
+            },
+            {
+              type updateVariable,
+              value {rewardPhrase} {currentWord},
+              variable rewardPhrase,
+              requiredExpression {EnableVocalInstruction}==Yes - After Reward Text or {EnableVocalInstruction}==Yes
+            },
+            {
+              text {rewardPhrase},
+              type updateComponent,
+              action setText,
+              channel speech-synthesis-a,
+              requiredExpression {EnableVocalInstruction}==Yes - After Reward Text or {EnableVocalInstruction}==Yes
+            }
+          ],
+          triggers [
+            {
+              type timer,
+              amount ({LineSuccessDurationMin}-{LineSuccessDurationMax}),
+              actions [
+                {
+                  job Vibrate,
+                  step Stop,
+                  type updateJob,
+                  action goTo
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  queues [],
+  channels {
+    keyboard-a {
+      name null,
+      type keyboard
+    },
+    generic-1-a {
+      name null,
+      type generic-1
+    },
+    shockcollar-a {
+      name Punishment,
+      type shockcollar
+    },
+    speech-synthesis-a {
+      name null,
+      type speech-synthesis
+    }
+  },
+  controls [
+    {
+      id ForbiddenLetters,
+      name Forbidden Letters,
+      type input,
+      value LSE,
+      description If any of these letters are typed, you will be shocked
+    },
+    {
+      id Phrases,
+      name Phrases (Line separated),
+      type textarea,
+      value brain offnI'm a good toyndumb dum
+    },
+    {
+      id PunishIntensityMin,
+      name Punish Intensity Minimum,
+      type input,
+      value 50,
+      description Punish Intensity Minimum
+    },
+    {
+      id PunishIntensityMax,
+      name Punish Intensity Maximum,
+      type input,
+      value 100,
+      description Punish Intensity Maximum
+    },
+    {
+      id KeypressThreshold,
+      name Keypress Threshold,
+      type input,
+      value 6,
+      description Keystrokes in a word allowed before being shocked
+    },
+    {
+      id LineSuccessIntensityMin,
+      name Line Success Intensity Minimum (0-100)%,
+      type input,
+      value 20,
+      description Reward Intensity for writing a single line
+    },
+    {
+      id LineSuccessIntensityMax,
+      name Line Success Intensity Maximum (0-100%),
+      type input,
+      value 80,
+      description Reward Intensity for writing a single line
+    },
+    {
+      id LineSuccessDurationMin,
+      name Line Success Duration Minimum (Seconds),
+      type input,
+      value 3,
+      description Reward length for completing a single line
+    },
+    {
+      id LineSuccessDurationMax,
+      name Line Success Duration Maximum (Seconds),
+      type input,
+      value 5,
+      description Reward length for completing a single line
+    },
+    {
+      id EnableVocalInstruction,
+      name Enable Vocal Instruction,
+      type multi-toggle,
+      value Yes - After Reward Text,
+      options [
+        Yes - After Reward Text,
+        Yes,
+        No
+      ]
+    },
+    {
+      id VocalRewardText,
+      name Vocal Reward Text,
+      type input,
+      value Good Toy,
+      options [
+        Yes,
+        No
+      ],
+      description Will be read when successfully writing your phrase
+    },
+    {
+      id VocalInstructionPrefix,
+      name Vocal Instruction Prefix,
+      type input,
+      value Type,
+      description This will be read aloud. Giving context for your next phrase that should be typed. If left blank, only the phrase that should be typed will be said
+    },
+    {
+      id EnableVocalPunishment,
+      name Enable Vocal Punishment,
+      type multi-toggle,
+      value No,
+      options [
+        Yes,
+        No
+      ],
+      description Recommended only if typing phrases. Not as helpful for freeform text.
+    },
+    {
+      id VocalPunishmentText,
+      name Vocal Punishment Text,
+      type input,
+      value Bad,
+      description This will be read if you try to write too smart. To disable (recommended), leave blank
+    }
+  ],
+  controlPresets [],
+  media {
+    patterns {},
+    audio {},
+    voices {}
+  },
+  customFunctions var currentLetter = 0;nvar targetWord = '';nvar targetWordLength = 0;nvar forbiddenLetters = '';nvar totalKeypresses = 0;nvar originalPhrase = '';nvar statusPrefix = '';nvar statusSuffix = '';nnfunction updateTrackedWords () {n    targetWord = '';n    forbiddenLetters = getVariable('ForbiddenLetters').toUpperCase();n    n    Choose at random one phrase for the rewardn    var newValidWords = getVariable('Phrases').split('n');n    var totalWords = newValidWords.length;n    var pick = Math.random();n    pick = pick  totalWords;n    pick = Math.floor(pick);nn    TODO Add handling for punctuation, casen        Punctuation consider both main key-presses in addition to shift+key-press e.g. !@#...n        Case will need toggle function for shift press and for caps lock. Need to consider when both are enabledn    Strips unhandled characters from the phrasen    originalPhrase = newValidWords[pick];n    targetWord = newValidWords[pick].toUpperCase().replace([^0-9 a-zA-Z]gi, '');n    n    n    Initialize variables for comparisonn    targetWordLength = targetWord.length;n    totalKeypresses = 0;n    currentLetter = 0;n    findNextValidLetter();n    setVariable(currentWord, originalPhrase);n    statusPrefix = originalPhrase+ ;n    callAction({typeupdateScript,actionsetText,textstatusPrefix+statusSuffix});nn}nnfunction onKeyPressed (key) {n    statusSuffix = '';nnn     Complexity based punishment Punish for edits and overlong wordsn    if(key === Space  key === Enter) {n        totalKeypresses = 0;n    } else if (++totalKeypresses  getVariable('KeypressThreshold')) {n        callAction({typeupdateJob,jobPunish,actionstart,restarttrue});n        statusSuffix = nShort words only! Show how dumb you are!;n    } else if ( key === Backspace  key === ArrowLeft) {n        callAction({typeupdateJob,jobPunish,actionstart,restarttrue});n        statusSuffix = nDon't revise! Show how dumb you are!;n    }nnnn    TODO Add handling for punctuation, casen    if (key.lastIndexOf('Key') === 0  key.lastIndexOf('Digit') === 0  key === 'Space') {nn        key = key.replace('Key','');n        key = key.replace('Digit','');n        key = key.replace('Space',' ');n        n        n        Punish for typing any disallowed lettern        if (forbiddenLetters.lastIndexOf(key)  -1 ) {n            callAction({typeupdateJob,jobPunish,actionstart,restarttrue});n            statusSuffix = statusSuffix + nYou're not allowed to use the letter '+key+';n        }n        n        n        Current keypress matches expected key in phrasen        if (key === targetWord.substring(currentLetter,currentLetter +1)) {n            statusPrefix = statusPrefix + key;n            statusSuffix = statusSuffix + nCorrect Letter;n            currentLetter++;nn            Positive reward on a successful completion. Then choose next phrase            n            if (currentLetter === targetWordLength) {n                callAction({typeupdateJob,jobVibrate,actionstart,restarttrue});n                updateTrackedWords();n                statusSuffix = nnCompleted Phrase!;n            }n            else {n                findNextValidLetter();n            }nn        }n        Restart tracking from the beginning of the phrase if the expected letter wasn't typedn        else if (targetWordLength  0) { Ignore case where no phrases are definedn            statusPrefix = originalPhrase+ ;n            statusSuffix = statusSuffix + n Incorrect Letter - Start over;n            currentLetter = 0;n            findNextValidLetter();n        }nn    }n    callAction({typeupdateScript,actionsetText,textstatusPrefix+statusSuffix});n}nnfunction findNextValidLetter() {n    while(forbiddenLetters.lastIndexOf(targetWord.substring(currentLetter,currentLetter +1))  -1) { Find the next 'correct' letter in the current phrasen        statusPrefix = statusPrefix + targetWord.substring(currentLetter,currentLetter +1);n        currentLetter++;n    }n    setVariable(nextLetter, targetWord.substring(currentLetter,currentLetter+1));n}nnnupdateTrackedWords();n
+}
