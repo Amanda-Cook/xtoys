@@ -1,0 +1,220 @@
+{
+  "initialActions": [
+    {
+      "type": "updateVariable",
+      "value": "0",
+      "variable": "Intensity"
+    },
+    {
+      "time": "0",
+      "type": "updateComponent",
+      "shock": false,
+      "action": "setShock2",
+      "channel": "shockcollar-a",
+      "percentVolume": "0"
+    },
+    {
+      "type": "updateComponent",
+      "action": "setVolume",
+      "channel": "generic-1-a",
+      "rampTime": 0,
+      "percentVolume": "0"
+    }
+  ],
+  "finalActions": [
+    {
+      "time": "0",
+      "type": "updateComponent",
+      "shock": false,
+      "action": "setShock2",
+      "channel": "shockcollar-a",
+      "percentVolume": "0"
+    },
+    {
+      "type": "updateComponent",
+      "action": "setVolume",
+      "channel": "generic-1-a",
+      "rampTime": 0,
+      "percentVolume": "0"
+    }
+  ],
+  "globalTriggers": [
+    {
+      "type": "componentState",
+      "word": "([a-z0-9']*) ([a-z0-9']*)",
+      "actions": [
+        {
+          "code": "updateTrackedWords2(word1,word2)",
+          "type": "customCode",
+          "resultVar": "result",
+          "variables": [
+            {
+              "name": "word1",
+              "value": "trigger-1",
+              "expression": null
+            },
+            {
+              "name": "word2",
+              "value": "trigger-2",
+              "expression": null
+            }
+          ]
+        }
+      ],
+      "channel": "speech-recognition-a"
+    }
+  ],
+  "jobs": {
+    "Main": {
+      "steps": {
+        "Stop": {
+          "actions": [
+            {
+              "type": "updateComponent",
+              "action": "setVolume",
+              "channel": "generic-1-a",
+              "rampTime": 0,
+              "percentVolume": "0"
+            },
+            {
+              "type": "updateVariable",
+              "value": "0",
+              "variable": "Intensity"
+            }
+          ]
+        },
+        "START": {
+          "actions": [
+            {
+              "type": "updateComponent",
+              "action": "setVolume",
+              "channel": "generic-1-a",
+              "rampTime": "",
+              "percentVolume": "{Intensity}"
+            }
+          ],
+          "triggers": [
+            {
+              "type": "timer",
+              "amount": "2",
+              "actions": [
+                {
+                  "job": "Main",
+                  "step": "Stop",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "Punish": {
+      "steps": {
+        "START": {
+          "actions": [
+            {
+              "time": "({ShockDurationMin}-{ShockDurationMax})",
+              "type": "updateComponent",
+              "shock": true,
+              "action": "setShock2",
+              "channel": "shockcollar-a",
+              "percentVolume": "({ShockIntensityMin}-{ShockIntensityMax})"
+            },
+            {
+              "type": "updateComponent",
+              "action": "setVolume",
+              "channel": "generic-1-a",
+              "rampTime": 0,
+              "percentVolume": "0"
+            },
+            {
+              "type": "updateVariable",
+              "value": "0",
+              "variable": "Intensity"
+            }
+          ],
+          "triggers": []
+        }
+      }
+    }
+  },
+  "queues": [],
+  "channels": {
+    "generic-1-a": {
+      "name": "Pleasure",
+      "type": "generic-1"
+    },
+    "shockcollar-a": {
+      "name": null,
+      "type": "shockcollar"
+    },
+    "speech-recognition-a": {
+      "name": null,
+      "type": "speech-recognition"
+    }
+  },
+  "controls": [
+    {
+      "id": "SyllableThreshold",
+      "max": 4,
+      "min": 1,
+      "name": "Smartness Threshold",
+      "type": "slider",
+      "value": "2",
+      "description": "Adjust the size of words you're allowed to use"
+    },
+    {
+      "id": "PauseLimit",
+      "name": "Pause Limit (Seconds)",
+      "type": "input",
+      "value": "2",
+      "description": "Amount of time you're allowed to pause when you're expected to be speaking"
+    },
+    {
+      "id": "ProgressionMultiplier",
+      "max": 5,
+      "min": 1,
+      "name": "Progression Difficulty",
+      "type": "slider",
+      "value": 2,
+      "description": "Increases the number of spoken words before pleasure intensity is increased"
+    },
+    {
+      "id": "ShockIntensityMin",
+      "name": "Shock Intensity Minimum",
+      "type": "input",
+      "value": "40",
+      "description": "Shock Intensity Minimum (0-100%)"
+    },
+    {
+      "id": "ShockIntensityMax",
+      "name": "Shock Intensity Maximum",
+      "type": "input",
+      "value": "80",
+      "description": "Shock Intensity Maximum (0-100%)"
+    },
+    {
+      "id": "ShockDurationMin",
+      "name": "Shock Duration Minimum",
+      "type": "input",
+      "value": ".5",
+      "description": "Shock Duration Minimum (Seconds)"
+    },
+    {
+      "id": "ShockDurationMax",
+      "name": "Shock Duration Maximum",
+      "type": "input",
+      "value": "1",
+      "description": "Shock Duration Maximum (Seconds)"
+    }
+  ],
+  "controlPresets": [],
+  "media": {
+    "audio": {},
+    "voices": {},
+    "patterns": {}
+  },
+  "customFunctions": "var debugPhrase = '';\nvar totalWords = 0;\n\n\n/* ******************************************************************************************************\n** Function: updateTrackedWords2\n** Input - results from Speech Recognition {trigger-1} and {trigger-2}\n** Description: Feed any input words to the scoring function\n**\n** Notes: This function was added to address #1 and #2 below \n**        3-5 are not addressed in this code\n**\n**\n** Testing notes on the speech recognition block\n**      1. Global trigger for a single word was not fast enough, and words would frequently be missed\n**      2. Speech recognition with current pattern occasionally duplicates a word at the end of a sentence\n**      3. Speech recognition occasionally inserts the word 'period' at the end of a sentence\n**      4. Speech recognition may insert the word 'mark' after saying 'question'\n**      5. Speech recognition may insert the word 'point' after saying 'exclaimation'\n**\n****************************************************************************************************** */\nfunction updateTrackedWords2 (word1,word2) {\n\n    //DEBUG ONLY - Used to display the word and translated string for scoring\n        debugPhrase = debugPhrase+\" \"+word1+\" \"+word2;\n        //debugPhrase = debugPhrase+\" \"+word1+\" \"+word2+\" \"+String(word1).replace(/[aeiouy']+/g,\"a\").replace(/[bcdfghjklmnpqrstvwxz]/g,\"\").replace(/^[0-9]/,\"11\")+\" \"+String(word2).replace(/[aeiouy']+/g,\"a\").replace(/[bcdfghjklmnpqrstvwxz]/g,\"\").replace(/^[0-9]/,\"11\");\n        \n        \n        callAction({\"type\":\"updateScript\",\"action\":\"setText\",\"text\":debugPhrase});\n    //\n\n\n    scoreWord(word1);\n    if (word1 != word2) { //Ignore case where Speech Recognition duplicated a word\n        scoreWord(word2);\n    }\n\n}\n\n\n/* ******************************************************************************************************\n** Function: scoreWord\n** Input - Recognied word from speech recognition block\n** Description: Execute Punish job if the word is more complex than threshold\n**              Otherwise, If enough words were spoken - increase the intensity\n**                         Invoke the main job to keep the pleasure block alive\n**\n**  1. Cast input to string as most numbers are sent as a numeric value e.g. 30 instead of 'thirty'\n**  2. Approximate syllable count for a word by counting the number of non-consecutive vowels\n**     i.  convert all consecutive vowels to a single vowel\n**     ii. drop all consonant \n**  3. If the word has a digit in it, insert an additional digit\n**  4. Compare the length of the above steps against the allowed syllable limit\n**  \n**\n****************************************************************************************************** */\nfunction scoreWord(word) {\n    var intensity =0;\n    if(String(word).replace(/[aeiouy']+/g,\"a\").replace(/[bcdfghjklmnpqrstvwxz]/g,\"\").replace(/^[0-9]/,\"11\").length > getVariable('SyllableThreshold')) {\n        callAction({\"type\":\"updateJob\",\"job\":\"Punish\",\"action\":\"start\",\"restart\":true});\n\n    }\n    else {\n        intensity = getVariable('Intensity');\n        if(++totalWords >= (intensity / 5) * getVariable('ProgressionMultiplier') ) {\n                totalWords = 0;\n                setVariable(\"Intensity\", intensity + 5);\n        }\n        callAction({\"type\":\"updateJob\",\"job\":\"Main\",\"action\":\"start\",\"restart\":true});\n    }\n    \n    \n}"
+}
