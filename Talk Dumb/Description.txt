@@ -1,5 +1,6 @@
 Talk Dumb is a language learning tool designed to help dumb down your vocabulary skills. 
-v0.2 Added a progressive pleasure component. Babble to make your toy buzz. 
+
+Babble for progressively increasing pleasure. 
 
 Avoid penalties by refraining from using complex words and large numbers.
 

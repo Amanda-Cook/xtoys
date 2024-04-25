@@ -22,11 +22,11 @@ var totalWords = 0;
 function updateTrackedWords2 (word1,word2) {
 
     //DEBUG ONLY - Used to display the word and translated string for scoring
-        debugPhrase = debugPhrase+" "+word1+" "+word2;
+    //    debugPhrase = debugPhrase+" "+word1+" "+word2;
         //debugPhrase = debugPhrase+" "+word1+" "+word2+" "+String(word1).replace(/[aeiouy']+/g,"a").replace(/[bcdfghjklmnpqrstvwxz]/g,"").replace(/^[0-9]/,"11")+" "+String(word2).replace(/[aeiouy']+/g,"a").replace(/[bcdfghjklmnpqrstvwxz]/g,"").replace(/^[0-9]/,"11");
         
         
-        callAction({"type":"updateScript","action":"setText","text":debugPhrase});
+    //    callAction({"type":"updateScript","action":"setText","text":debugPhrase});
     //
 
 
@@ -48,7 +48,7 @@ function updateTrackedWords2 (word1,word2) {
 **  1. Cast input to string as most numbers are sent as a numeric value e.g. 30 instead of 'thirty'
 **  2. Approximate syllable count for a word by counting the number of non-consecutive vowels
 **     i.  convert all consecutive vowels to a single vowel
-**     ii. drop all consonant 
+**     ii. drop all consonants
 **  3. If the word has a digit in it, insert an additional digit
 **  4. Compare the length of the above steps against the allowed syllable limit
 **  
