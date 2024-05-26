@@ -1,0 +1,263 @@
+{
+  "initialActions": [
+    {
+      "type": "updateComponent",
+      "action": "setVolume",
+      "channel": "generic-1-a",
+      "rampTime": 0,
+      "percentVolume": "0"
+    },
+    {
+      "job": "AutoClick",
+      "type": "updateJob",
+      "action": "start",
+      "restart": false
+    }
+  ],
+  "finalActions": [
+    {
+      "type": "updateComponent",
+      "action": "setVolume",
+      "channel": "generic-1-a",
+      "rampTime": 0,
+      "percentVolume": "0"
+    }
+  ],
+  "globalTriggers": [
+    {
+      "type": "componentState",
+      "state": "down",
+      "actions": [
+        {
+          "part": "audio",
+          "type": "updateScript",
+          "audio": "SingleClick",
+          "source": "media"
+        },
+        {
+          "text": "{ButtonRewardText}",
+          "type": "updateComponent",
+          "action": "setText",
+          "channel": "speech-synthesis-a"
+        },
+        {
+          "job": "Main",
+          "type": "updateJob",
+          "action": "start",
+          "restart": true
+        },
+        {
+          "job": "AutoClick",
+          "type": "updateJob",
+          "action": "start",
+          "restart": true
+        }
+      ],
+      "channel": "push-button-a"
+    },
+    {
+      "type": "componentState",
+      "word": "{MantraText}",
+      "actions": [
+        {
+          "part": "audio",
+          "type": "updateScript",
+          "audio": "SingleClick",
+          "source": "media"
+        },
+        {
+          "text": "{MantraRewardText}",
+          "type": "updateComponent",
+          "action": "setText",
+          "channel": "speech-synthesis-a"
+        },
+        {
+          "job": "Main",
+          "type": "updateJob",
+          "action": "start",
+          "restart": true
+        },
+        {
+          "job": "AutoClick",
+          "type": "updateJob",
+          "action": "start",
+          "restart": true
+        }
+      ],
+      "channel": "speech-recognition-a",
+      "isFinal": true,
+      "ignoreTTS": true
+    }
+  ],
+  "jobs": {
+    "Main": {
+      "steps": {
+        "Stop": {
+          "actions": [
+            {
+              "type": "updateComponent",
+              "action": "setVolume",
+              "channel": "generic-1-a",
+              "rampTime": 0,
+              "percentVolume": "0"
+            }
+          ]
+        },
+        "START": {
+          "actions": [
+            {
+              "type": "updateComponent",
+              "action": "setVolume",
+              "channel": "generic-1-a",
+              "rampTime": 0,
+              "percentVolume": "{PhysicalRewardIntensity}"
+            }
+          ],
+          "triggers": [
+            {
+              "type": "timer",
+              "amount": "{PhysicalRewardDuration}",
+              "actions": [
+                {
+                  "job": "Main",
+                  "step": "Stop",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "AutoClick": {
+      "steps": {
+        "START": {
+          "actions": [],
+          "triggers": [
+            {
+              "type": "timer",
+              "amount": "{AutoClickerDelay}",
+              "actions": [
+                {
+                  "job": "Main",
+                  "type": "updateJob",
+                  "action": "start",
+                  "restart": true,
+                  "requiredExpression": "{EnableAutoClicker}==\"Enabled\""
+                },
+                {
+                  "text": "{ButtonRewardText}",
+                  "type": "updateComponent",
+                  "action": "setText",
+                  "channel": "speech-synthesis-a",
+                  "requiredExpression": "{EnableAutoClicker}==\"Enabled\""
+                },
+                {
+                  "part": "audio",
+                  "type": "updateScript",
+                  "audio": "SingleClick",
+                  "source": "media",
+                  "requiredExpression": "{EnableAutoClicker}==\"Enabled\""
+                },
+                {
+                  "job": "AutoClick",
+                  "type": "updateJob",
+                  "action": "start",
+                  "restart": true
+                }
+              ],
+              "requiredExpression": ""
+            }
+          ]
+        }
+      }
+    }
+  },
+  "queues": [],
+  "channels": {
+    "generic-1-a": {
+      "name": "Physical Reward",
+      "type": "generic-1"
+    },
+    "push-button-a": {
+      "name": null,
+      "type": "push-button"
+    },
+    "speech-synthesis-a": {
+      "name": null,
+      "type": "speech-synthesis"
+    },
+    "speech-recognition-a": {
+      "name": null,
+      "type": "speech-recognition"
+    }
+  },
+  "controls": [
+    {
+      "id": "MantraText",
+      "name": "Mantra",
+      "type": "input",
+      "value": "I'm a good slut",
+      "description": "Speak this phrase to be rewarded"
+    },
+    {
+      "id": "MantraRewardText",
+      "name": "Mantra Reward Text",
+      "type": "input",
+      "value": "Good Girl",
+      "description": "Reward for speaking your mantra"
+    },
+    {
+      "id": "ButtonRewardText",
+      "name": "Button Reward Text",
+      "type": "input",
+      "value": "Good Slut",
+      "description": "Played when the button is pressed"
+    },
+    {
+      "id": "PhysicalRewardIntensity",
+      "name": "Physical Reward Intensity",
+      "type": "input",
+      "value": "(0-100)",
+      "description": "Vibration %"
+    },
+    {
+      "id": "PhysicalRewardDuration",
+      "name": "Physical Reward Duration",
+      "type": "input",
+      "value": "(2-5)",
+      "description": "Vibration Duration (seconds)"
+    },
+    {
+      "id": "EnableAutoClicker",
+      "name": "Enable Automatic Clicker",
+      "type": "multi-toggle",
+      "value": "Disabled",
+      "options": [
+        "Enabled",
+        "Disabled"
+      ],
+      "description": "Automatically trigger the clicker"
+    },
+    {
+      "id": "AutoClickerDelay",
+      "name": "Automatic Clicker Delay",
+      "type": "input",
+      "value": "(30-60)",
+      "description": "Seconds before receiving the next automatic click"
+    }
+  ],
+  "controlPresets": [],
+  "media": {
+    "audio": {
+      "SingleClick": {
+        "path": "42e12ca65d2539e352ef2a8bc3e6523be3f13335229a9ba6066188dfcd9608b0",
+        "type": "upload"
+      }
+    },
+    "voices": {},
+    "patterns": {}
+  },
+  "customFunctions": ""
+}
