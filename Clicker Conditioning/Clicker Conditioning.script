@@ -12,6 +12,11 @@
       "type": "updateJob",
       "action": "start",
       "restart": false
+    },
+    {
+      "type": "updateVariable",
+      "value": "FALSE",
+      "variable": "isSpeaking"
     }
   ],
   "finalActions": [
@@ -35,10 +40,10 @@
           "source": "media"
         },
         {
-          "text": "{ButtonRewardText}",
-          "type": "updateComponent",
-          "action": "setText",
-          "channel": "speech-synthesis-a"
+          "job": "RewardSpeech",
+          "type": "updateJob",
+          "action": "start",
+          "restart": false
         },
         {
           "job": "Main",
@@ -147,10 +152,10 @@
                   "requiredExpression": "{EnableAutoClicker}==\"Enabled\""
                 },
                 {
-                  "text": "{ButtonRewardText}",
-                  "type": "updateComponent",
-                  "action": "setText",
-                  "channel": "speech-synthesis-a",
+                  "job": "RewardSpeech",
+                  "type": "updateJob",
+                  "action": "start",
+                  "restart": false,
                   "requiredExpression": "{EnableAutoClicker}==\"Enabled\""
                 },
                 {
@@ -168,6 +173,70 @@
                 }
               ],
               "requiredExpression": ""
+            }
+          ]
+        }
+      }
+    },
+    "RewardSpeech": {
+      "steps": {
+        "Wait": {
+          "actions": [],
+          "triggers": [
+            {
+              "type": "timer",
+              "amount": "2",
+              "actions": [
+                {
+                  "type": "updateVariable",
+                  "value": "\"FALSE\"",
+                  "variable": "isSpeaking"
+                },
+                {
+                  "job": "RewardSpeech",
+                  "type": "updateJob",
+                  "action": "stop"
+                }
+              ]
+            }
+          ]
+        },
+        "START": {
+          "actions": [],
+          "triggers": [
+            {
+              "type": "expressionState",
+              "actions": [
+                {
+                  "job": "RewardSpeech",
+                  "type": "updateJob",
+                  "action": "stop"
+                }
+              ],
+              "expression": "{isSpeaking}==\"TRUE\""
+            },
+            {
+              "type": "expressionState",
+              "actions": [
+                {
+                  "type": "updateVariable",
+                  "value": "\"TRUE\"",
+                  "variable": "isSpeaking"
+                },
+                {
+                  "text": "{ButtonRewardText}",
+                  "type": "updateComponent",
+                  "action": "setText",
+                  "channel": "speech-synthesis-a"
+                },
+                {
+                  "job": "RewardSpeech",
+                  "step": "Wait",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ],
+              "expression": "{isSpeaking}==\"FALSE\""
             }
           ]
         }
@@ -246,6 +315,13 @@
       "type": "input",
       "value": "(30-60)",
       "description": "Seconds before receiving the next automatic click"
+    },
+    {
+      "id": "rewardSpeechLength",
+      "name": "Reward Speech Length",
+      "type": "input",
+      "value": "2",
+      "description": "Number of expected seconds for the reward speech to be spoken"
     }
   ],
   "controlPresets": [],
