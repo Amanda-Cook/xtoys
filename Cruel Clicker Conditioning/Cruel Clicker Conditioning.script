@@ -1,0 +1,421 @@
+{
+  "initialActions": [
+    {
+      "type": "updateComponent",
+      "action": "setVolume",
+      "channel": "generic-1-a",
+      "rampTime": 0,
+      "percentVolume": "0"
+    },
+    {
+      "job": "AutoClick",
+      "type": "updateJob",
+      "action": "start",
+      "restart": false
+    },
+    {
+      "type": "updateVariable",
+      "value": "FALSE",
+      "variable": "isSpeaking"
+    }
+  ],
+  "finalActions": [
+    {
+      "type": "updateComponent",
+      "action": "setVolume",
+      "channel": "generic-1-a",
+      "rampTime": 0,
+      "percentVolume": "0"
+    },
+    {
+      "type": "updateComponent",
+      "shock": false,
+      "action": "setShock2",
+      "channel": "shockcollar-a",
+      "percentVolume": "0"
+    }
+  ],
+  "globalTriggers": [
+    {
+      "type": "componentState",
+      "state": "down",
+      "actions": [
+        {
+          "job": "Click",
+          "type": "updateJob",
+          "action": "start",
+          "restart": true
+        }
+      ],
+      "channel": "push-button-a"
+    }
+  ],
+  "jobs": {
+    "Click": {
+      "steps": {
+        "START": {
+          "actions": [
+            {
+              "part": "audio",
+              "type": "updateScript",
+              "audio": "SingleClick",
+              "source": "media"
+            }
+          ],
+          "triggers": [
+            {
+              "type": "timer",
+              "amount": "2",
+              "actions": [
+                {
+                  "job": "Click",
+                  "step": "Trigger",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ]
+            }
+          ]
+        },
+        "Trigger": {
+          "actions": [
+            {
+              "code": "rollOdds(RewardChance,PunishmentChance,AllowMultipleStimuli,AllowNullStimuli)",
+              "type": "customCode",
+              "resultVar": "result",
+              "variables": [
+                {
+                  "name": "RewardChance",
+                  "value": "RewardChance",
+                  "expression": null
+                },
+                {
+                  "name": "PunishmentChance",
+                  "value": "PunishmentChance",
+                  "expression": null
+                },
+                {
+                  "name": "AllowMultipleStimuli",
+                  "value": "AllowMultipleStimuli",
+                  "expression": null
+                },
+                {
+                  "name": "AllowNullStimuli",
+                  "value": "AllowNullStimuli",
+                  "expression": null
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "Punish": {
+      "steps": {
+        "Stop": {
+          "actions": [
+            {
+              "time": "0",
+              "type": "updateComponent",
+              "shock": false,
+              "action": "setShock2",
+              "channel": "shockcollar-a",
+              "percentVolume": "0"
+            },
+            {
+              "type": "updateVariable",
+              "value": "stop",
+              "variable": "debugp"
+            }
+          ]
+        },
+        "START": {
+          "actions": [
+            {
+              "time": "10",
+              "type": "updateComponent",
+              "shock": true,
+              "action": "setShock2",
+              "channel": "shockcollar-a",
+              "percentVolume": "{PunishmentIntensity}"
+            },
+            {
+              "type": "updateVariable",
+              "value": "start",
+              "variable": "debugp"
+            }
+          ],
+          "triggers": [
+            {
+              "type": "timer",
+              "amount": "{PunishmentDuration}",
+              "actions": [
+                {
+                  "job": "Punish",
+                  "step": "Stop",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "Reward": {
+      "steps": {
+        "Stop": {
+          "actions": [
+            {
+              "type": "updateComponent",
+              "action": "setVolume",
+              "channel": "generic-1-a",
+              "rampTime": 0,
+              "percentVolume": "0"
+            },
+            {
+              "type": "updateVariable",
+              "value": "2",
+              "variable": "MantraRewardText"
+            }
+          ]
+        },
+        "START": {
+          "actions": [
+            {
+              "type": "updateVariable",
+              "value": "1",
+              "variable": "MantraRewardText"
+            },
+            {
+              "type": "updateComponent",
+              "action": "setVolume",
+              "channel": "generic-1-a",
+              "rampTime": 0,
+              "percentVolume": "{PhysicalRewardIntensity}"
+            }
+          ],
+          "triggers": [
+            {
+              "type": "timer",
+              "amount": "{PhysicalRewardDuration}",
+              "actions": [
+                {
+                  "job": "Reward",
+                  "step": "Stop",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "AutoClick": {
+      "steps": {
+        "Pause": {
+          "actions": [],
+          "triggers": [
+            {
+              "type": "timer",
+              "amount": "2",
+              "actions": [
+                {
+                  "job": "AutoClick",
+                  "step": "Trigger",
+                  "type": "updateJob",
+                  "action": "goTo",
+                  "requiredExpression": ""
+                }
+              ]
+            }
+          ]
+        },
+        "START": {
+          "actions": [],
+          "triggers": [
+            {
+              "type": "timer",
+              "amount": "{AutoClickerDelay}",
+              "actions": [
+                {
+                  "part": "audio",
+                  "type": "updateScript",
+                  "audio": "SingleClick",
+                  "source": "media",
+                  "requiredExpression": "{EnableAutoClicker}==\"Enabled\""
+                },
+                {
+                  "job": "AutoClick",
+                  "step": "Pause",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ],
+              "requiredExpression": ""
+            }
+          ]
+        },
+        "Trigger": {
+          "actions": [
+            {
+              "code": "rollOdds(RewardChance,PunishmentChance,AllowMultipleStimuli,AllowNullStimuli)",
+              "type": "customCode",
+              "resultVar": "result",
+              "variables": [
+                {
+                  "name": "RewardChance",
+                  "value": "RewardChance",
+                  "expression": null
+                },
+                {
+                  "name": "PunishmentChance",
+                  "value": "PunishmentChance",
+                  "expression": null
+                },
+                {
+                  "name": "AllowMultipleStimuli",
+                  "value": "AllowMultipleStimuli",
+                  "expression": null
+                },
+                {
+                  "name": "AllowNullStimuli",
+                  "value": "AllowNullStimuli",
+                  "expression": null
+                }
+              ],
+              "requiredExpression": "{EnableAutoClicker}==\"Enabled\""
+            }
+          ],
+          "triggers": [
+            {
+              "type": "timer",
+              "amount": ".1",
+              "actions": [
+                {
+                  "job": "AutoClick",
+                  "step": "START",
+                  "type": "updateJob",
+                  "action": "goTo"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "queues": [],
+  "channels": {
+    "generic-1-a": {
+      "name": "Physical Reward",
+      "type": "generic-1"
+    },
+    "push-button-a": {
+      "name": null,
+      "type": "push-button"
+    },
+    "shockcollar-a": {
+      "name": "Punish",
+      "type": "shockcollar"
+    }
+  },
+  "controls": [
+    {
+      "id": "RewardChance",
+      "max": 100,
+      "min": 0,
+      "name": "Pleasure Chance",
+      "type": "slider",
+      "value": 85,
+      "description": "Higher values are more likely to deliver pleasure"
+    },
+    {
+      "id": "PunishmentChance",
+      "max": 100,
+      "min": 0,
+      "name": "Pain Chance",
+      "type": "slider",
+      "value": 20,
+      "description": "Higher values are more likely to deliver pain"
+    },
+    {
+      "id": "EnableAutoClicker",
+      "name": "Enable Automatic Clicker",
+      "type": "multi-toggle",
+      "value": "Enabled",
+      "options": [
+        "Enabled",
+        "Disabled"
+      ],
+      "description": "Automatically trigger the clicker"
+    },
+    {
+      "id": "AllowMultipleStimuli",
+      "name": "Allow Multiple Stimuli",
+      "type": "multi-toggle",
+      "options": [
+        "Multiple Allowed",
+        "Single Only"
+      ],
+      "description": "Enable simultaneous output"
+    },
+    {
+      "id": "AllowNullStimuli",
+      "name": "Allow for a chance of neither toy being activated",
+      "type": "multi-toggle",
+      "options": [
+        "Enabled",
+        "Disabled"
+      ]
+    },
+    {
+      "id": "PhysicalRewardIntensity",
+      "name": "Pleasure Intensity",
+      "type": "input",
+      "value": "(5-100)",
+      "description": "Vibration %"
+    },
+    {
+      "id": "PhysicalRewardDuration",
+      "name": "Pleasure Duration",
+      "type": "input",
+      "value": "(2-5)",
+      "description": "Vibration Duration (seconds)"
+    },
+    {
+      "id": "PunishmentIntensity",
+      "name": "Pain Intensity",
+      "type": "input",
+      "value": "(60-100)",
+      "description": "Shock %"
+    },
+    {
+      "id": "PunishmentDuration",
+      "name": "Pain Duration",
+      "type": "input",
+      "value": "(2-5)",
+      "description": "Shock Duration (seconds)"
+    },
+    {
+      "id": "AutoClickerDelay",
+      "name": "Automatic Clicker Delay",
+      "type": "input",
+      "value": "(15-30)",
+      "description": "Seconds before receiving the next automatic click"
+    }
+  ],
+  "controlPresets": [],
+  "media": {
+    "audio": {
+      "SingleClick": {
+        "path": "42e12ca65d2539e352ef2a8bc3e6523be3f13335229a9ba6066188dfcd9608b0",
+        "type": "upload"
+      }
+    },
+    "voices": {},
+    "patterns": {}
+  },
+  "customFunctions": "function rollOdds(RewardChance,PunishmentChance,AllowMultipleStimuli,AllowNullStimuli) {\r\n    var rewardDie;\r\n    var punishDie;\r\n    \r\n    rewardDie = Math.floor(Math.random() * 100);\r\n    punishDie = Math.floor(Math.random() * 100);    \r\n    \r\n    if (AllowMultipleStimuli ==\"Multiple Allowed\" && AllowNullStimuli == \"Enabled\") {\r\n        //Indepentently check to see if each stimulus should be triggered.\r\n        if (rewardDie < RewardChance) {\r\n            callAction({\"type\":\"updateJob\",\"job\":\"Reward\",\"action\":\"start\",\"restart\":true});\r\n        }\r\n        if (punishDie < PunishmentChance) {\r\n            callAction({\"type\":\"updateJob\",\"job\":\"Punish\",\"action\":\"start\",\"restart\":true});\r\n        } \r\n\r\n    \r\n    } else if (AllowMultipleStimuli ==\"Multiple Allowed\" && AllowNullStimuli == \"Disabled\") {\r\n        //Requires 1 or more stimuli to be triggered\r\n        if ((rewardDie > RewardChance) && (punishDie > PunishmentChance)) {\r\n\r\n            //Handles case where neither stimuli would have been activated. Chooses based on which outcome is 'closer'\r\n            if ((rewardDie - RewardChance) < (punishDie - PunishmentChance)) {\r\n                callAction({\"type\":\"updateJob\",\"job\":\"Reward\",\"action\":\"start\",\"restart\":true});\r\n            }\r\n            else if ((rewardDie - RewardChance) > (punishDie - PunishmentChance)) {\r\n                callAction({\"type\":\"updateJob\",\"job\":\"Punish\",\"action\":\"start\",\"restart\":true});\r\n            } else {\r\n                //TODO: Consider if a wider range should be accepted for triggering both stimuli\r\n                callAction({\"type\":\"updateJob\",\"job\":\"Reward\",\"action\":\"start\",\"restart\":true});\r\n                callAction({\"type\":\"updateJob\",\"job\":\"Punish\",\"action\":\"start\",\"restart\":true});\r\n            }\r\n        } else {\r\n            //Indepentently check to see if each stimulus should be triggered.\r\n            if (rewardDie < RewardChance) {\r\n                callAction({\"type\":\"updateJob\",\"job\":\"Reward\",\"action\":\"start\",\"restart\":true});\r\n            }\r\n            if (punishDie < PunishmentChance) {\r\n                callAction({\"type\":\"updateJob\",\"job\":\"Punish\",\"action\":\"start\",\"restart\":true});\r\n            }             \r\n        }\r\n        \r\n        \r\n        \r\n    } else if (AllowMultipleStimuli ==\"Single Only\" && AllowNullStimuli == \"Enabled\") {\r\n        //Cascading checks to see if stimulus should be activated. \r\n        if (rewardDie < RewardChance) {\r\n            callAction({\"type\":\"updateJob\",\"job\":\"Reward\",\"action\":\"start\",\"restart\":true});\r\n        }\r\n        else if (punishDie < PunishmentChance) {\r\n            callAction({\"type\":\"updateJob\",\"job\":\"Punish\",\"action\":\"start\",\"restart\":true});\r\n        } \r\n        \r\n        \r\n    } else if (AllowMultipleStimuli ==\"Single Only\" && AllowNullStimuli == \"Disabled\") {\r\n        if (rewardDie < RewardChance) {\r\n            callAction({\"type\":\"updateJob\",\"job\":\"Reward\",\"action\":\"start\",\"restart\":true});\r\n        }\r\n        else {\r\n            callAction({\"type\":\"updateJob\",\"job\":\"Punish\",\"action\":\"start\",\"restart\":true});\r\n        } \r\n        \r\n    }\r\n\r\n    \r\n    \r\n    \r\n}\r\n"
+}
